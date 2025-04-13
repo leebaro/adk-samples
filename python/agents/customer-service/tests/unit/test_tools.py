@@ -50,6 +50,14 @@ def test_approve_discount_ok():
     assert result == {"status": "ok"}
 
 
+def test_approve_discount():
+    result = approve_discount(
+        discount_type="percentage", value=15.0, reason="Test large discount"
+    )
+    assert result["status"]=="rejected"
+    assert result == {"status": "ok"}
+
+
 def test_approve_discount_rejected():
     result = approve_discount(
         discount_type="percentage", value=15.0, reason="Test large discount"
