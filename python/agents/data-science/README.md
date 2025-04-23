@@ -80,14 +80,8 @@ The key features of the Data Science Multi-Agent include:
     poetry env activate
     ```
 
-    This activates the virtual environment, allowing you to run commands within the project's environment. To make sure the environment is active, use for example
-
-    ```bash
-    $> poetry env list
-       data-science-FAlhSuLn-py3.13 (Activated)
-    ```
-
-    If the above command did not activate the environment for you, you can also activate it through
+    This activates the virtual environment, allowing you to run commands within the project's environment.
+    Make sure the environment is active. If the above command did not activate the environment for you, you can also activate it through
 
      ```bash
     source $(poetry env info --path)/bin/activate
