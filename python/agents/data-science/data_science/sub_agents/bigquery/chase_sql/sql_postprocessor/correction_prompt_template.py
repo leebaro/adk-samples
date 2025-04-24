@@ -13,6 +13,30 @@
 # limitations under the License.
 
 """Prompt template for making any corrections to the translation of SQL."""
+"""SQL 번역에 대한 수정 작업을 수행하기 위한 프롬프트 템플릿."""
+
+"""
+여러 데이터베이스와 SQL 방언에 대한 전문가입니다.
+다음 SQL 방언으로 포맷된 SQL 쿼리가 제공됩니다:
+{sql_dialect}
+
+SQL 쿼리는 다음과 같습니다:
+{sql_query}
+{schema_insert}
+이 SQL 쿼리에는 다음과 같은 오류가 있을 수 있습니다:
+{errors}
+
+SQL 쿼리를 수정하여 해당 SQL 방언에 맞게 올바르게 포맷되도록 해 주세요:
+{sql_dialect}
+
+쿼리 내의 테이블 또는 열 이름을 변경하지 마십시오. 그러나 열 이름을 테이블 이름으로 자격을 부여할 수 있습니다.
+쿼리 내의 리터럴을 변경하지 마십시오.
+지정된 SQL 방언에 맞게 쿼리를 재작성할 수 있지만, 다른 변경은 허용되지 않습니다.
+수정된 SQL 쿼리 외의 다른 정보를 반환하지 마십시오.
+
+수정된 SQL 쿼리:
+"""
+
 
 CORRECTION_PROMPT_TEMPLATE_V1_0 = """
 You are an expert in multiple databases and SQL dialects.

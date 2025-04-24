@@ -182,6 +182,15 @@ The key features of the Data Science Multi-Agent include:
     export CODE_INTERPRETER_EXTENSION_NAME='projects/<YOUR_PROJECT_ID>/locations/us-central1/extensions/<YOUR_EXTENSION_ID>'
     ```
 
+7.  **기타 환경 변수:**
+
+*   `NL2SQL_METHOD`: (선택 사항) `BASELINE` 또는 `CHASE` 중 하나를 지정합니다. SQL 생성 방법을 설정합니다. BASELINE은 Gemini의 기본 제공 기능을 사용하며, CHASE는 [CHASE-SQL](https://arxiv.org/abs/2410.01943)을 사용합니다.
+    *   `CODE_INTERPRETER_EXTENSION_NAME`: (선택 사항) Vertex AI에 이미 존재하는 Code Interpreter 확장 프로그램의 전체 리소스 이름입니다.
+        이 값을 제공하지 않으면 새로운 확장 프로그램이 생성됩니다. (예:
+        `projects/<YOUR_PROJECT_ID>/locations/<YOUR_LOCATION>/extensions/<YOUR_EXTENSION_ID>`).
+        새로 생성된 코드 인터프리터 확장 프로그램의 ID는 로그/터미널에서 확인하고,
+        환경 변수에 해당 값을 제공하여 다중 확장 프로그램 생성을 방지하십시오.
+
 ## Running the Agent
 
 You can run the agent using the ADK command in your terminal.

@@ -36,7 +36,7 @@ SQLGlotColumnsDictType = dict[str, str]
 SQLGlotSchemaType = dict[str, Any]
 
 BirdSampleType = dict[str, Any]
-
+ 
 
 def _isinstance_list_of_str_tuples_lists(obj: Any) -> bool:
     """Checks if the object is a list of tuples or listsof strings."""
@@ -85,6 +85,32 @@ def _isinstance_sqlglot_schema_type(obj: Any) -> bool:
 def _isinstance_bird_sample_type(obj: Any) -> bool:
     """Checks if the object is a SQLGlot schema type."""
     return isinstance(obj, dict) and not _isinstance_sqlglot_schema_type(obj)
+
+"""Translator from SQLite to BigQuery.
+
+이 클래스는 입력 SQL 방언(예: SQLite)에서 출력 SQL 방언(예: BigQuery)로 SQL 쿼리를 변환하는 데 사용됩니다. 이 클래스는 변환을 수행하기 위해 SQLGlot 라이브러리를 도구로 사용합니다.
+
+변환은 다음과 같은 단계로 진행됩니다:
+
+1. (선택 사항) 입력 SQL 쿼리에 오류가 있는 경우, 입력 SQL 쿼리는 먼저 LLM에 의해 오류 수정됩니다.
+2. 입력 SQL 쿼리는 도구에서 출력 SQL 방언의 SQL 쿼리로 변환됩니다.
+2. 입력 SQL 쿼리는 도구로 출력 SQL 방언의 SQL 쿼리로 변환됩니다.
+3. (선택 사항) 도구 출력 SQL 쿼리에 오류가 있는 경우, 도구 출력 SQL 쿼리는
+LLM에 의해 오류 수정됩니다.
+
+클래스 속성:
+    INPUT_DIALECT: 입력 SQL 방언.
+    OUTPUT_DIALECT: 출력 SQL 방언.
+
+속성:
+    sql_query: 번역할 SQL 쿼리.
+    model: 모델 객체 또는 LLM에 사용할 모델의 이름.
+    temperature: LLM에 사용할 온도.
+    process_input_errors: 입력 SQL 쿼리에서 발생한 오류가 LLM에 의해 처리되어야 하는 경우
+    True.
+    process_tool_output_errors: 도구 출력 SQL 쿼리에서 발생한 오류가 LLM에 의해 처리되어야 하는 경우
+    True.
+"""
 
 
 class SqlTranslator:
