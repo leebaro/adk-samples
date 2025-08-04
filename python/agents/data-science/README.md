@@ -4,6 +4,11 @@
 
 This project demonstrates a multi-agent system designed for sophisticated data analysis. It integrates several specialized agents to handle different aspects of the data pipeline, from data retrieval to advanced analytics and machine learning. The system is built to interact with BigQuery, perform complex data manipulations, generate data visualizations and execute machine learning tasks using BigQuery ML (BQML). The agent can generate text response as well as visuals, including plots and graphs for data analysis and exploration.
 
+## 개요 (한국어 번역)
+
+이 프로젝트는 정교한 데이터 분석을 위해 설계된 멀티 에이전트 시스템을 시연합니다. 여러 전문화된 에이전트를 통합하여 데이터 파이프라인의 다양한 측면(데이터 수집부터 고급 분석 및 머신러닝까지)을 처리합니다. 이 시스템은 BigQuery와 상호작용하며, 복잡한 데이터 조작, 데이터 시각화 생성, BigQuery ML(BQML)을 활용한 머신러닝 작업을 수행할 수 있습니다. 에이전트는 텍스트 응답뿐만 아니라 데이터 분석 및 탐색을 위한 플롯, 그래프 등 시각 자료도 생성할 수 있습니다.
+
+
 ▶️ **Watch the Video Walkthrough:** [How to build a Data Science agent with ADK](https://www.youtube.com/watch?v=efcUXoMX818)
 
 ## Agent Details
@@ -16,7 +21,6 @@ The key features of the Data Science Multi-Agent include:
 | **Agent Type:**  | Multi Agent |
 | **Components:**  | Tools, AgentTools, Session Memory, RAG |
 | **Vertical:**  | All (Applicable across industries needing advanced data analysis) |
-
 
 ### Architecture
 ![Data Science Architecture](data-science-architecture.png)
@@ -31,6 +35,15 @@ The key features of the Data Science Multi-Agent include:
 *   **ADK Web GUI:** Offers a user-friendly GUI interface for interacting with the agents.
 *   **Testability:** Includes a comprehensive test suite for ensuring the reliability of the agents.
 
+### 주요 기능 (한국어 번역)
+
+*   **멀티 에이전트 아키텍처:** 최상위 에이전트가 각기 다른 작업에 특화된 하위 에이전트들을 조율합니다.
+*   **데이터베이스 상호작용 (NL2SQL):** 데이터베이스 에이전트가 자연어 쿼리를 SQL로 변환하여 BigQuery와 상호작용합니다.
+*   **데이터 과학 분석 (NL2Py):** 데이터 과학 에이전트가 자연어 지시에 따라 Python을 사용해 데이터 분석 및 시각화를 수행합니다.
+*   **머신러닝 (BQML):** BQML 에이전트가 BigQuery ML을 활용해 머신러닝 모델을 학습 및 평가합니다.
+*   **코드 인터프리터 통합:** Vertex AI의 코드 인터프리터 확장을 지원하여 복잡한 데이터 분석 및 조작이 가능합니다.
+*   **ADK 웹 GUI:** 에이전트와 상호작용할 수 있는 사용자 친화적인 GUI를 제공합니다.
+*   **테스트 가능성:** 에이전트의 신뢰성을 보장하기 위한 종합적인 테스트 스위트를 포함합니다.
 
 
 ## Setup and Installation
@@ -273,7 +286,24 @@ Tests assess the overall executability of the agents.
 - This command executes all test files within the `tests/` directory.
 - `poetry run` ensures that pytest runs within the project's virtual environment.
 
+### 테스트 실행
 
+테스트는 에이전트의 전체 실행 가능성을 평가합니다.
+
+**테스트 범주:**
+
+*   **통합 테스트:** 에이전트들이 서로 및 BigQuery와 같은 외부 서비스와 올바르게 상호작용할 수 있는지 검증합니다. 루트 에이전트가 적절한 하위 에이전트에게 작업을 위임하고, 하위 에이전트가 의도된 작업을 수행할 수 있는지 확인합니다.
+*   **하위 에이전트 기능 테스트:** 각 하위 에이전트(예: Database Agent, BQML Agent)의 특정 기능에 초점을 맞춥니다. 각 하위 에이전트가 SQL 쿼리 실행이나 BQML 모델 학습 등 의도된 작업을 수행할 수 있는지 확인합니다.
+*   **환경 쿼리 테스트:** 에이전트가 환경 기반 쿼리를 처리할 수 있는지 검증합니다.
+
+**테스트 실행 방법:**
+
+    ```bash
+    poetry run pytest tests
+    ```
+
+- 이 명령은 `tests/` 디렉터리 내의 모든 테스트 파일을 실행합니다.
+- `poetry run`은 pytest가 프로젝트의 가상 환경 내에서 실행되도록 보장합니다.
 
 ## Deployment on Vertex AI Agent Engine
 

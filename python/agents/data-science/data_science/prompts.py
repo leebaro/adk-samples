@@ -37,7 +37,7 @@ def return_instructions_root() -> str:
 
         # **Workflow:**
 
-        # 1. **Understand Intent 
+        # 1. **Understand Intent
 
         # 2. **Retrieve Data TOOL (`call_db_agent` - if applicable):**  If you need to query the database, use this tool. Make sure to provide a proper query to it to fulfill the task.
 

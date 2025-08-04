@@ -1,4 +1,44 @@
 # Copyright 2025 Google LLC
+# 이 파일은 데이터베이스 에이전트가 사용하는 도구들을 포함합니다.
+
+# Functions:
+
+# - _serialize_value_for_sql(value)
+#     - 판다스 DataFrame의 파이썬 값을 BigQuery SQL 리터럴로 직렬화합니다.
+#     - NaN, 문자열, 바이트, 날짜/시간, 리스트, 딕셔너리 등 다양한 타입을 SQL에 맞게 변환합니다.
+
+# - get_bq_client()
+#     - BigQuery 클라이언트를 반환합니다.
+#     - 전역 bq_client가 없으면 환경 변수에서 프로젝트 ID를 읽어 새 클라이언트를 생성합니다.
+
+# - get_database_settings()
+#     - 데이터베이스 설정 정보를 반환합니다.
+#     - 전역 database_settings가 없으면 update_database_settings()로 초기화합니다.
+
+# - update_database_settings()
+#     - 데이터베이스 설정 정보를 갱신합니다.
+#     - BigQuery 스키마 정보를 읽어오고, 프로젝트/데이터셋 ID, ChaseSQL 상수 등을 포함한 딕셔너리를 반환합니다.
+
+# - get_bigquery_schema(dataset_id, data_project_id, client=None, compute_project_id=None)
+#     - BigQuery 데이터셋의 스키마와 예시값을 포함한 DDL을 생성합니다.
+#     - 테이블, 뷰, 외부테이블(특히 ICEBERG 포맷) 등 다양한 테이블 타입을 처리합니다.
+#     - 각 테이블에 대해 CREATE TABLE/VIEW/EXTERNAL TABLE DDL을 생성하고, 샘플 데이터를 INSERT문으로 추가합니다.
+
+# - initial_bq_nl2sql(question: str, tool_context: ToolContext) -> str
+#     - 자연어 질문을 받아 BigQuery SQL 쿼리를 생성합니다.
+#     - 데이터베이스 스키마와 가이드라인을 포함한 프롬프트를 LLM에 전달하여 SQL을 생성합니다.
+#     - 생성된 SQL을 tool_context.state에 저장합니다.
+
+# - run_bigquery_validation(sql_string: str, tool_context: ToolContext) -> str
+#     - BigQuery SQL 쿼리의 문법 및 실행 가능성을 검증합니다.
+#     - SQL 문자열을 정제(cleanup)하고, DML/DDL 문이 포함되어 있으면 거부합니다.
+#     - BigQuery에 dry-run으로 쿼리를 실행하여 결과를 확인하고, 결과 또는 오류 메시지를 반환합니다.
+
+# 상수:
+# - MAX_NUM_ROWS: 반환할 최대 행 수(기본값 80)
+# - data_project, compute_project, vertex_project, location: 환경 변수에서 읽은 프로젝트/위치 정보
+# - llm_client: Vertex AI 기반 LLM 클라이언트
+
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -238,6 +278,35 @@ def initial_bq_nl2sql(
         str: An SQL statement to answer this question.
     """
 
+    # prompt_template 변수의 값(영문)을 한국어로 번역한 주석:
+    #
+    # 당신은 BigQuery SQL 전문가로서, 사용자의 BigQuery 테이블 관련 질문에 대해 SQL 쿼리를 생성하여 답변하는 역할을 맡고 있습니다. 주어진 컨텍스트를 활용하여 아래 질문에 답하는 BigQuery SQL 쿼리를 작성하세요.
+    #
+    # **가이드라인:**
+    #
+    # - **테이블 참조:** 항상 SQL 문에서 데이터베이스 접두사가 포함된 전체 테이블 이름을 사용하세요. 테이블은 백틱(`)으로 감싸서 완전한 이름(예: `project_name.dataset_name.table_name`)으로 참조해야 합니다. 테이블 이름은 대소문자를 구분합니다.
+    # - **조인:** 가능한 한 적은 수의 테이블만 조인하세요. 테이블을 조인할 때는 모든 조인 컬럼의 데이터 타입이 동일한지 확인하세요. 데이터베이스와 제공된 테이블 스키마를 분석하여 컬럼과 테이블 간의 관계를 이해하세요.
+    # - **집계:** SELECT 문에서 집계하지 않은 모든 컬럼은 GROUP BY 절에 포함하세요.
+    # - **SQL 문법:** BigQuery에 맞는 구문적, 의미적으로 올바른 SQL을 반환하세요. (project_id, owner, table, column 관계를 올바르게 매핑) SQL의 AS 문을 사용하여 컬럼이나 테이블에 임시 이름을 부여할 수 있습니다. 항상 서브쿼리와 유니온 쿼리는 괄호로 감싸세요.
+    # - **컬럼 사용:** *반드시* 테이블 스키마에 명시된 컬럼명(column_name)만 사용하세요. 다른 컬럼명은 사용하지 마세요. 테이블 스키마에 명시된 column_name은 반드시 해당 table_name에만 연결하세요.
+    # - **필터:** 반환되는 전체 행 수를 줄이기 위해 효과적으로 쿼리를 작성하세요. 예를 들어, WHERE, HAVING 등 필터나 COUNT, SUM 등의 집계 함수를 사용할 수 있습니다.
+    # - **행 제한:** 반환되는 최대 행 수는 {MAX_NUM_ROWS} 미만이어야 합니다.
+    #
+    # **스키마:**
+    #
+    # 데이터베이스 구조는 다음 테이블 스키마(샘플 행 포함 가능)로 정의됩니다:
+    #
+    # ```
+    # {SCHEMA}
+    # ```
+    #
+    # **자연어 질문:**
+    #
+    # ```
+    # {QUESTION}
+    # ```
+    #
+    # **단계별로 생각하세요:** 스키마, 질문, 가이드라인, 모범 사례를 신중히 고려하여 올바른 BigQuery SQL을 생성하세요.
     prompt_template = """
 You are a BigQuery SQL expert tasked with answering user's questions about BigQuery tables by generating SQL queries in the GoogleSql dialect.  Your task is to write a Bigquery SQL query that answers the following question while using the provided context.
 
